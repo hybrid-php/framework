@@ -3,60 +3,72 @@ namespace Hybrid;
 
 class Request {
 
-	private static $_instance = null;
+    private static $instance = null;
 
-	public function __construct($uri = null) {
+    public function __construct($uri = null) {
 
-		if($uri === null) {
+        if($uri === null) {
 
-			$uri = $_SERVER['REQUEST_URI'];
-		}
+            $uri = $_SERVER['REQUEST_URI'];
+        }
 
-		$this->ip = $_SERVER['REMOTE_ADDR'];
-		$this->user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $this->url = 'http://' . $_SERVER['HTTP_HOST'] . $uri;
 
-		if($referer = $_SERVER['HTTP_REFERER']) {
+        $base_path = dirname($_SERVER['SCRIPT_NAME']);
 
-			$this->referer = $referer;
-		}
+        if($base_path != '/') {
 
-		$this->method = $_SERVER['REQUEST_METHOD'];
-		$this->is_ajax = strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+            $this->base_path = $base_path;
+        }
 
-		$base_path = dirname($_SERVER['SCRIPT_NAME']);
+        $this->path = preg_replace('/' . preg_quote($this->base_path, '/') . '/', '', strtok($uri, '?'), 1);
+        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->is_ajax = strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+        $this->ip = $_SERVER['REMOTE_ADDR'];
+        $this->user_agent = $_SERVER['HTTP_USER_AGENT'];
 
-		if($base_path != '/') {
+        if($referer = $_SERVER['HTTP_REFERER']) {
 
-			$this->base_path = $base_path;
-		}
+            $this->referer = $referer;
+        }
+    }
 
-		$this->path = preg_replace('/' . preg_quote($this->base_path, '/') . '/', '', strtok($uri, '?'), 1);
-	}
+    public static function factory($url = null) {
 
-	public static function factory($uri) {
+        if($url === null) {
 
-		return new self($uri);
-	}
+            $url = $_SERVER['REQUEST_URI'];
+        }
 
-	public static function current() {
+        if(strpos($url, '://') === false) {
 
-		if(self::$_instance === null) self::$_instance = new self();
+            return new Request\Internal($url);
 
-		return self::$_instance;
-	}
+        } else {
 
-	public static function get($key = null, $default = null) {
+            return new Request\External($url);
+        }
+    }
 
-		return $key === null ? $_GET : (isset($_GET[$key]) ? $_GET[$key] : $default);
-	}
+    public static function current() {
 
-	public static function post($key = null, $default = null) {
+        if(self::$instance === null) self::$instance = new self();
 
-		return $key === null ? $_POST : (isset($_POST[$key]) ? $_POST[$key] : $default);
-	}
+        return self::$instance;
+    }
 
-	public static function files($key = null, $default = null) {
+    public static function get($key = null, $default = null) {
 
-		return $key === null ? $_FILES : (isset($_FILES[$key]) ? $_FILES[$key] : $default);
-	}
+        return $key === null ? $_GET : (isset($_GET[$key]) ? $_GET[$key] : $default);
+    }
+
+    public static function post($key = null, $default = null) {
+
+        return $key === null ? $_POST : (isset($_POST[$key]) ? $_POST[$key] : $default);
+    }
+
+    public static function files($key = null, $default = null) {
+
+        return $key === null ? $_FILES : (isset($_FILES[$key]) ? $_FILES[$key] : $default);
+    }
 }
