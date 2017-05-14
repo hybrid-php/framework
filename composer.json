@@ -1,12 +1,12 @@
 {
   "name": "hybrid-php/framework",
-  "description": "Hybrid PHP",
+  "description": "HybridPHP",
   "keywords": ["hybrid", "php", "framework"],
   "homepage": "http://hybrid-php.org/",
   "authors": [
     {
       "name": "Memforis Group",
-      "homepage": "http://memforis.info/"
+      "homepage": "http://memforis.com/"
     }
   ],
   "require": {
